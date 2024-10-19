@@ -33,7 +33,7 @@ class EllipsoidProblem:
 
         # objective
         self.dual_obj = (
-            cp.norm(scale_tril @ Fz_ystd)
+            cp.norm(scale_tril.T @ Fz_ystd)
             + loc @ Fz_ystd
             + y_mean @ Fz
         )

@@ -1,6 +1,6 @@
 """Implements PTC baselines for portfolio optimization problem.
 
-[1]  Predict-then-Calibrate: A New Perspective of Robust Contextual LP
+[1] Predict-then-Calibrate: A New Perspective of Robust Contextual LP
     Sun et al., 2023
     https://proceedings.neurips.cc/paper_files/paper/2023/hash/397271e11322fae8ba7f827c50ca8d9b-Abstract-Conference.html
 
@@ -127,32 +127,37 @@ def ptc_ellipse(
         mlp.load_state_dict(torch.load(ckpt_path, weights_only=True))
 
         d1, d2 = split_loader(loaders['calib'])
-        r1 = get_residual_ds(mlp, d1, transform='norm', device=device)
-        r2 = get_residual_ds(mlp, d2, transform='norm', device=device)
-        residual_loaders = dict(
-            train=torch.utils.data.DataLoader(r1, batch_size=BATCH_SIZE, shuffle=True),
-            calib=torch.utils.data.DataLoader(r2, batch_size=BATCH_SIZE, shuffle=False)
-        )
-
-        # train MLP to predict α-quantile of norm of residuals
-        best_pinball_loss = np.inf
-        best_quantile_mlp = None
-        best_hps = (np.nan, np.nan)
-        for lr, l2reg in itertools.product((1e-4, 1e-3, 1e-2), (0, 1e-4, 1e-3, 1e-2)):
-            quantile_mlp, quantile_mlp_result = train_mlp_regressor(
-                residual_loaders, pinball_loss_fn, input_dim=INPUT_DIM[ds], y_dim=1,
-                max_epochs=MAX_EPOCHS, lr=lr, l2reg=l2reg, return_best_model=True,
-                device=device, pos=True)
-            if quantile_mlp_result['val_loss'] < best_pinball_loss:
-                best_pinball_loss = quantile_mlp_result['val_loss']
-                best_quantile_mlp = quantile_mlp
-                best_hps = (lr, l2reg)
-        tqdm.write(f'Best hyperparameters: lr={best_hps[0]}, l2reg={best_hps[1]}')
-        assert best_quantile_mlp is not None
-        quantile_mlp = best_quantile_mlp
         ckpt_path = os.path.join(out_dir, f'normres_quantile_mlp_a{alpha:.2f}_s{seed}.pt')
-        torch.save(quantile_mlp.cpu().state_dict(), ckpt_path)
-        tqdm.write(f'Saved quantile_mlp to {ckpt_path}')
+        if os.path.exists(ckpt_path):
+            tqdm.write(f'Found saved quantile_mlp at {ckpt_path}')
+            quantile_mlp = MLP(input_dim=INPUT_DIM[ds], y_dim=1, pos=True)
+            quantile_mlp.load_state_dict(torch.load(ckpt_path, weights_only=True))
+        else:
+            r1 = get_residual_ds(mlp, d1, transform='norm', device=device)
+            r2 = get_residual_ds(mlp, d2, transform='norm', device=device)
+            residual_loaders = dict(
+                train=torch.utils.data.DataLoader(r1, batch_size=BATCH_SIZE, shuffle=True),
+                calib=torch.utils.data.DataLoader(r2, batch_size=BATCH_SIZE, shuffle=False)
+            )
+
+            # train MLP to predict α-quantile of norm of residuals
+            best_pinball_loss = np.inf
+            best_quantile_mlp = None
+            best_hps = (np.nan, np.nan)
+            for lr, l2reg in itertools.product((1e-4, 1e-3, 1e-2), (0, 1e-4, 1e-3, 1e-2)):
+                quantile_mlp, quantile_mlp_result = train_mlp_regressor(
+                    residual_loaders, pinball_loss_fn, input_dim=INPUT_DIM[ds], y_dim=1,
+                    max_epochs=MAX_EPOCHS, lr=lr, l2reg=l2reg, return_best_model=True,
+                    device=device, pos=True)
+                if quantile_mlp_result['val_loss'] < best_pinball_loss:
+                    best_pinball_loss = quantile_mlp_result['val_loss']
+                    best_quantile_mlp = quantile_mlp
+                    best_hps = (lr, l2reg)
+            tqdm.write(f'Best hyperparameters: lr={best_hps[0]}, l2reg={best_hps[1]}')
+            assert best_quantile_mlp is not None
+            quantile_mlp = best_quantile_mlp
+            torch.save(quantile_mlp.cpu().state_dict(), ckpt_path)
+            tqdm.write(f'Saved quantile_mlp to {ckpt_path}')
 
         # then optimize
         q, L = conformal_q_ellipse(mlp, quantile_mlp, d2, alpha=alpha, device=device)
