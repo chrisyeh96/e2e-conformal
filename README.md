@@ -1,5 +1,34 @@
 # End-to-End Conformal Calibration for Optimization Under Uncertainty
 
+[Christopher Yeh](https://chrisyeh96.github.io/), [Nicolas Christianson](https://nicochristianson.com/), [Alan Wu](https://alanwu.xyz/), [Adam Wierman](https://adamwierman.com/), and [Yisong Yue](http://www.yisongyue.com/)
+<br>**California Institute of Technology**
+
+This repo contains code for the following two papers:
+
+**End-to-End Conformal Calibration for Optimization Under Uncertainty**
+<br>C. Yeh*, N. Christianson*, A. Wu, A. Wierman, Y. Yue
+<br>Preprint
+<br>[**Paper**](https://arxiv.org/abs/2409.20534)
+
+
+**End-to-End Conformal Calibration for Robust Grid-Scale Battery Storage Optimization**
+<br>C. Yeh*, N. Christianson*, A. Wierman, Y. Yue
+<br>NeurIPS 2024 Workshop on Tackling Climate Change with Machine Learning
+<br>[**Video**](https://youtu.be/qoLeXnF-lhE)
+
+\* denotes equal contribution
+
+
+## Table of Contents
+
+1. [Installation instructions](#installation-instructions)
+2. [Running Code](#running-code)
+3. [Problems structure](#problems-structure)
+   - [Example: battery storage optimization problem](#example-battery-storage-optimization-problem)
+   - [Example: box uncertainty](#example-box-uncertainty)
+4. [Citation](#citation)
+
+
 ## Installation instructions
 
 Code from this repo has been tested on Ubuntu 22.04.
@@ -240,4 +269,32 @@ class BoxProblem:
     params: dict[str, cp.Parameter]
 
     ...
+```
+
+## Citation
+
+Please cite our papers as follows, or use the BibTeX entries below.
+
+> C. Yeh, N. Christianson, A. Wu, A. Wierman, and Y. Yue, End-to-end conformal calibration for optimization under uncertainty, 2024. DOI: 10.48550/arXiv.2409.20534. [Online]. Available: https://arxiv.org/abs/2409.20534.
+>
+> C. Yeh, N. Christianson, A. Wierman, and Y. Yue, "End-to-end conformal calibration for robust grid-scale battery storage optimization," in _NeurIPS 2024 Workshop on Tackling Climate Change with Machine Learning_, Vancouver, Canada, Dec. 2024.
+
+
+```tex
+@misc{yeh2024endtoendarxiv,
+    title = {End-to-End Conformal Calibration for Optimization Under Uncertainty},
+    author = {Yeh, Christopher and Christianson, Nicolas and Wu, Alan and Wierman, Adam and Yue, Yisong},
+    year = 2024,
+    doi = {10.48550/arXiv.2409.20534},
+    url = {https://arxiv.org/abs/2409.20534}
+}
+
+@inproceedings{yeh2024endtoend,
+  title = {End-to-End Conformal Calibration for Robust Grid-Scale Battery Storage Optimization},
+  author = {Christopher Yeh and Nicolas Christianson and Adam Wierman and Yisong Yue},
+  year = 2024,
+  month = 12,
+  booktitle = {NeurIPS 2024 Workshop on Tackling Climate Change with Machine Learning},
+  address = {Vancouver, Canada}
+}
 ```
